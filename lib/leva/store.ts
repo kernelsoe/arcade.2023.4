@@ -1,31 +1,36 @@
-import { useMemo } from 'react'
-import create, { SetState, GetState, StoreApi } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
-import { normalizeInput, join, updateInput, warn, LevaErrors, getUid } from './utils'
-import { SpecialInputs, MappedPaths, DataInput } from './types'
-import type { Data, FolderSettings, State, StoreType } from './types'
-import { createEventEmitter } from './eventEmitter'
+import { useMemo } from "react";
+import { create, StoreApi } from "zustand";
+import { subscribeWithSelector } from "zustand/middleware";
+import {
+  normalizeInput,
+  join,
+  updateInput,
+  warn,
+  LevaErrors,
+  getUid,
+} from "./utils";
+import { SpecialInputs, MappedPaths, DataInput } from "./types";
+import type { Data, FolderSettings, State, StoreType } from "./types";
+import { createEventEmitter } from "./eventEmitter";
 
 export const Store = function (this: StoreType) {
-  const store = create(
-    subscribeWithSelector<State, SetState<State>, GetState<State>, StoreApi<State>>(() => ({ data: {} }))
-  )
+  const store = create(subscribeWithSelector<State>(() => ({ data: {} })));
 
-  const eventEmitter = createEventEmitter()
+  const eventEmitter = createEventEmitter();
 
-  this.storeId = getUid()
-  this.useStore = store
+  this.storeId = getUid();
+  this.useStore = store;
   /**
    * Folders will hold the folder settings for the pane.
    * @note possibly make this reactive
    */
-  const folders: Record<string, FolderSettings> = {}
+  const folders: Record<string, FolderSettings> = {};
 
   /**
    * OrderedPaths will hold all the paths in a parent -> children order.
    * This will ensure we can display the controls in a predictable order.
    */
-  const orderedPaths = new Set<String>()
+  const orderedPaths = new Set<String>();
 
   /**
    * For a given data structure, gets all paths for which inputs have
@@ -36,10 +41,10 @@ export const Store = function (this: StoreType) {
    * @param data
    */
   this.getVisiblePaths = () => {
-    const data = this.getData()
-    const paths = Object.keys(data)
+    const data = this.getData();
+    const paths = Object.keys(data);
     // identifies hiddenFolders
-    const hiddenFolders: string[] = []
+    const hiddenFolders: string[] = [];
     Object.entries(folders).forEach(([path, settings]) => {
       if (
         // the folder settings have a render function
@@ -53,10 +58,10 @@ export const Store = function (this: StoreType) {
         !settings.render(this.get)
       )
         // then folder is hidden
-        hiddenFolders.push(path + '.')
-    })
+        hiddenFolders.push(path + ".");
+    });
 
-    const visiblePaths: string[] = []
+    const visiblePaths: string[] = [];
     orderedPaths.forEach((path: any) => {
       if (
         path in data &&
@@ -68,22 +73,22 @@ export const Store = function (this: StoreType) {
         (!data[path].render || data[path].render!(this.get))
       ) {
         // then the input path is visible
-        visiblePaths.push(path)
+        visiblePaths.push(path);
       }
-    })
+    });
 
-    return visiblePaths
-  }
+    return visiblePaths;
+  };
 
   // adds paths to OrderedPaths
   this.setOrderedPaths = (newPaths) => {
-    newPaths.forEach((p) => orderedPaths.add(p))
-  }
+    newPaths.forEach((p) => orderedPaths.add(p));
+  };
 
   this.orderPaths = (paths) => {
-    this.setOrderedPaths(paths)
-    return paths
-  }
+    this.setOrderedPaths(paths);
+    return paths;
+  };
 
   /**
    * When the useControls hook unmmounts, it will call this function that will
@@ -94,36 +99,36 @@ export const Store = function (this: StoreType) {
    */
   this.disposePaths = (paths) => {
     store.setState((s) => {
-      const data = s.data
+      const data = s.data;
       paths.forEach((path) => {
         if (path in data) {
-          const input = data[path]
-          input.__refCount--
+          const input = data[path];
+          input.__refCount--;
           if (input.__refCount === 0 && input.type in SpecialInputs) {
             // this makes sure special inputs such as buttons are properly
             // refreshed. This might need some attention though.
-            delete data[path]
+            delete data[path];
           }
         }
-      })
-      return { data }
-    })
-  }
+      });
+      return { data };
+    });
+  };
 
   this.dispose = () => {
     store.setState(() => {
-      return { data: {} }
-    })
-  }
+      return { data: {} };
+    });
+  };
 
   this.getFolderSettings = (path) => {
-    return folders[path] || {}
-  }
+    return folders[path] || {};
+  };
 
   // Shorthand to get zustand store data
   this.getData = () => {
-    return store.getState().data
-  }
+    return store.getState().data;
+  };
 
   /**
    * Merges the data passed as an argument with the store data.
@@ -139,33 +144,33 @@ export const Store = function (this: StoreType) {
    */
   this.addData = (newData, override) => {
     store.setState((s) => {
-      const data = s.data
+      const data = s.data;
       Object.entries(newData).forEach(([path, newInputData]) => {
-        let input = data[path]
+        let input = data[path];
 
         // If an input already exists compare its values and increase the reference __refCount.
         if (!!input) {
           // @ts-ignore
-          const { type, value, ...rest } = newInputData
+          const { type, value, ...rest } = newInputData;
           if (type !== input.type) {
-            warn(LevaErrors.INPUT_TYPE_OVERRIDE, type)
+            warn(LevaErrors.INPUT_TYPE_OVERRIDE, type);
           } else {
             if (input.__refCount === 0 || override) {
-              Object.assign(input, rest)
+              Object.assign(input, rest);
             }
             // Else we increment the ref count
-            input.__refCount++
+            input.__refCount++;
           }
         } else {
-          data[path] = { ...newInputData, __refCount: 1 }
+          data[path] = { ...newInputData, __refCount: 1 };
         }
-      })
+      });
 
       // Since we're returning a new object, direct mutation of data
       // Should trigger a re-render so we're good!
-      return { data }
-    })
-  }
+      return { data };
+    });
+  };
 
   /**
    * Shorthand function to set the value of an input at a given path.
@@ -175,80 +180,95 @@ export const Store = function (this: StoreType) {
    */
   this.setValueAtPath = (path, value, fromPanel) => {
     store.setState((s) => {
-      const data = s.data
+      const data = s.data;
       //@ts-expect-error (we always update inputs with a value)
-      updateInput(data[path], value, path, this, fromPanel)
-      return { data }
-    })
-  }
+      updateInput(data[path], value, path, this, fromPanel);
+      return { data };
+    });
+  };
 
   this.setSettingsAtPath = (path, settings) => {
     store.setState((s) => {
-      const data = s.data
+      const data = s.data;
       //@ts-expect-error (we always update inputs with settings)
-      data[path].settings = { ...data[path].settings, ...settings }
-      return { data }
-    })
-  }
+      data[path].settings = { ...data[path].settings, ...settings };
+      return { data };
+    });
+  };
 
   this.disableInputAtPath = (path, flag) => {
     store.setState((s) => {
-      const data = s.data
+      const data = s.data;
       //@ts-expect-error (we always update inputs with a value)
-      data[path].disabled = flag
-      return { data }
-    })
-  }
+      data[path].disabled = flag;
+      return { data };
+    });
+  };
 
   this.set = (values, fromPanel: boolean) => {
     store.setState((s) => {
-      const data = s.data
+      const data = s.data;
       Object.entries(values).forEach(([path, value]) => {
         try {
           //@ts-expect-error (we always update inputs with a value)
-          updateInput(data[path], value, undefined, undefined, fromPanel)
+          updateInput(data[path], value, undefined, undefined, fromPanel);
         } catch (e) {
-          if (process.env.NODE_ENV === 'development') {
+          if (process.env.NODE_ENV === "development") {
             // eslint-disable-next-line no-console
-            console.warn(`[This message will only show in development]: \`set\` for path ${path} has failed.`, e)
+            console.warn(
+              `[This message will only show in development]: \`set\` for path ${path} has failed.`,
+              e,
+            );
           }
         }
-      })
-      return { data }
-    })
-  }
+      });
+      return { data };
+    });
+  };
 
   this.getInput = (path) => {
     try {
-      return this.getData()[path] as DataInput
+      return this.getData()[path] as DataInput;
     } catch (e) {
-      warn(LevaErrors.PATH_DOESNT_EXIST, path)
+      warn(LevaErrors.PATH_DOESNT_EXIST, path);
     }
-  }
+  };
 
   this.get = (path) => {
-    return this.getInput(path)?.value
-  }
+    return this.getInput(path)?.value;
+  };
 
   this.emitOnEditStart = (path: string) => {
-    eventEmitter.emit(`onEditStart:${path}`, this.get(path), path, { ...this.getInput(path), get: this.get })
-  }
+    eventEmitter.emit(`onEditStart:${path}`, this.get(path), path, {
+      ...this.getInput(path),
+      get: this.get,
+    });
+  };
 
   this.emitOnEditEnd = (path: string) => {
-    eventEmitter.emit(`onEditEnd:${path}`, this.get(path), path, { ...this.getInput(path), get: this.get })
-  }
+    eventEmitter.emit(`onEditEnd:${path}`, this.get(path), path, {
+      ...this.getInput(path),
+      get: this.get,
+    });
+  };
 
-  this.subscribeToEditStart = (path: string, listener: (value: any) => void): (() => void) => {
-    const _path = `onEditStart:${path}`
-    eventEmitter.on(_path, listener)
-    return () => eventEmitter.off(_path, listener)
-  }
+  this.subscribeToEditStart = (
+    path: string,
+    listener: (value: any) => void,
+  ): (() => void) => {
+    const _path = `onEditStart:${path}`;
+    eventEmitter.on(_path, listener);
+    return () => eventEmitter.off(_path, listener);
+  };
 
-  this.subscribeToEditEnd = (path: string, listener: (value: any) => void): (() => void) => {
-    const _path = `onEditEnd:${path}`
-    eventEmitter.on(_path, listener)
-    return () => eventEmitter.off(_path, listener)
-  }
+  this.subscribeToEditEnd = (
+    path: string,
+    listener: (value: any) => void,
+  ): (() => void) => {
+    const _path = `onEditEnd:${path}`;
+    eventEmitter.on(_path, listener);
+    return () => eventEmitter.off(_path, listener);
+  };
 
   /**
    * Recursively extract the data from the schema, sets folder initial
@@ -258,58 +278,74 @@ export const Store = function (this: StoreType) {
    * @param schema
    * @param rootPath used for recursivity
    */
-  const _getDataFromSchema = (schema: any, rootPath: string, mappedPaths: MappedPaths): Data => {
-    const data: Data = {}
+  const _getDataFromSchema = (
+    schema: any,
+    rootPath: string,
+    mappedPaths: MappedPaths,
+  ): Data => {
+    const data: Data = {};
 
     Object.entries(schema).forEach(([key, rawInput]: [string, any]) => {
       // if the key is empty, skip schema parsing and prompt an error.
-      if (key === '') return warn(LevaErrors.EMPTY_KEY)
+      if (key === "") return warn(LevaErrors.EMPTY_KEY);
 
-      let newPath = join(rootPath, key)
+      let newPath = join(rootPath, key);
 
       // If the input is a folder, then we recursively parse its schema and assign
       // it to the current data.
       if (rawInput.type === SpecialInputs.FOLDER) {
-        const newData = _getDataFromSchema(rawInput.schema, newPath, mappedPaths)
-        Object.assign(data, newData)
+        const newData = _getDataFromSchema(
+          rawInput.schema,
+          newPath,
+          mappedPaths,
+        );
+        Object.assign(data, newData);
 
         // Sets folder preferences if it wasn't set before
-        if (!(newPath in folders)) folders[newPath] = rawInput.settings as FolderSettings
+        if (!(newPath in folders))
+          folders[newPath] = rawInput.settings as FolderSettings;
       } else if (key in mappedPaths) {
         // if a key already exists, prompt an error.
-        warn(LevaErrors.DUPLICATE_KEYS, key, newPath, mappedPaths[key].path)
+        warn(LevaErrors.DUPLICATE_KEYS, key, newPath, mappedPaths[key].path);
       } else {
-        const normalizedInput = normalizeInput(rawInput, key, newPath, data)
+        const normalizedInput = normalizeInput(rawInput, key, newPath, data);
         if (normalizedInput) {
-          const { type, options, input } = normalizedInput
+          const { type, options, input } = normalizedInput;
           // @ts-ignore
-          const { onChange, transient, onEditStart, onEditEnd, ..._options } = options
-          data[newPath] = { type, ..._options, ...input, fromPanel: true }
-          mappedPaths[key] = { path: newPath, onChange, transient, onEditStart, onEditEnd }
+          const { onChange, transient, onEditStart, onEditEnd, ..._options } =
+            options;
+          data[newPath] = { type, ..._options, ...input, fromPanel: true };
+          mappedPaths[key] = {
+            path: newPath,
+            onChange,
+            transient,
+            onEditStart,
+            onEditEnd,
+          };
         } else {
-          warn(LevaErrors.UNKNOWN_INPUT, newPath, rawInput)
+          warn(LevaErrors.UNKNOWN_INPUT, newPath, rawInput);
         }
       }
-    })
+    });
 
-    return data
-  }
+    return data;
+  };
 
   this.getDataFromSchema = (schema) => {
-    const mappedPaths: MappedPaths = {}
-    const data = _getDataFromSchema(schema, '', mappedPaths)
-    return [data, mappedPaths]
-  }
-} as any as { new (): StoreType }
+    const mappedPaths: MappedPaths = {};
+    const data = _getDataFromSchema(schema, "", mappedPaths);
+    return [data, mappedPaths];
+  };
+} as any as { new (): StoreType };
 
-export const levaStore = new Store()
+export const levaStore = new Store();
 
 export function useCreateStore() {
-  return useMemo(() => new Store(), [])
+  return useMemo(() => new Store(), []);
 }
 
-if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
   // TODO remove store from window
   // @ts-expect-error
-  window.__STORE = levaStore
+  window.__STORE = levaStore;
 }
