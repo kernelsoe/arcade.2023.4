@@ -18,7 +18,7 @@ export default function AppLayout({
     <>
       <Meta {...meta} />
       <div className="text-stone-400">
-        <div className="absolute flex h-8 w-full max-w-screen-xl items-center justify-between border-b-[1px] border-b-stone-700 bg-stone-800 px-2 xl:mx-auto">
+        <div className="absolute flex h-8 w-full max-w-screen-xl items-center justify-between border-b-[1px] border-b-stone-800 bg-neutral-900 px-2 xl:mx-auto">
           <Link href="/" className="flex items-center font-display">
             <Image
               src="/logo.png"
@@ -31,7 +31,7 @@ export default function AppLayout({
           </Link>
         </div>
       </div>
-      <main className="h-screen w-screen bg-stone-800 py-10 px-8 text-stone-200">
+      <main className="h-screen w-screen bg-stone-900 py-10 px-8 text-stone-200">
         {children}
       </main>
     </>
