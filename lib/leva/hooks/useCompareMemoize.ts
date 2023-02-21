@@ -1,14 +1,14 @@
-import { useRef } from 'react'
-import { dequal } from 'dequal/lite'
-import shallow from 'zustand/shallow'
+import { useRef } from "react";
+import { dequal } from "dequal/lite";
+import { shallow } from "zustand/shallow";
 
 export function useCompareMemoize(value: any, deep: boolean) {
-  const ref = useRef()
-  const compare = deep ? dequal : shallow
+  const ref = useRef();
+  const compare = deep ? dequal : shallow;
 
   if (!compare(value, ref.current)) {
-    ref.current = value
+    ref.current = value;
   }
 
-  return ref.current
+  return ref.current;
 }
