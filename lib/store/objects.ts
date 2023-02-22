@@ -2,24 +2,18 @@ import produce from "immer";
 import { StateCreator } from "zustand";
 import { AppStoreSlice } from "./app";
 
-export interface NotationObject {
+export type Expression = {
+  expr: string;
+  o?: any;
+  f?: any;
+  i?: any;
+};
+export type ArcadeObject = {
   id: string;
   x?: number;
   y?: number;
-  d: any[]; // data = prose editor schema
-}
-// export type ArcadeObject = Notation;
-// export interface Notation extends BaseObject {
-//   type: "notation";
-// }
-export interface Stack {
-  id: string;
-  x: number;
-  y: number;
-  d: any[]; // data = child nodes
-}
-
-export type ArcadeObject = Stack | NotationObject;
+  v: Expression[];
+}; // Stack |
 
 export interface ObjectStoreSlice {
   rootIds: string[];

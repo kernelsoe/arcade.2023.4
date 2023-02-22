@@ -1,5 +1,6 @@
 import { useAppStore } from "@/lib/store/app";
 import { useEffect } from "react";
+import ArcadeObject from "./ArcadeObject";
 
 export default function Root() {
   const {
@@ -28,12 +29,11 @@ export default function Root() {
     console.log("Launch!");
     setObjects([
       {
-        x: 0,
-        y: 0,
-        d: [
+        x: 3,
+        y: 3,
+        v: [
           {
-            type: "expr",
-            i: 99,
+            expr: "99",
           },
         ],
         id: "1",
@@ -41,10 +41,9 @@ export default function Root() {
       {
         x: 6,
         y: 6,
-        d: [
+        v: [
           {
-            type: "expr",
-            notation: "range[1, 10]",
+            expr: "range[1, 10]",
             f: "range",
             i: [1, 10],
             o: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
@@ -55,10 +54,9 @@ export default function Root() {
       {
         x: 6,
         y: 9,
-        d: [
+        v: [
           {
-            type: "expr",
-            notation: "map[0, 1]",
+            expr: "map[0, 1]",
             f: "map",
             i: {
               // Inputs are subscription to other nodes
@@ -73,10 +71,9 @@ export default function Root() {
       {
         x: 12,
         y: 12,
-        d: [
+        v: [
           {
-            type: "expr",
-            notation: "x * 3",
+            expr: "x * 3",
             f: "*",
             i: {
               x: "", // input is not yet linked! just "x"
@@ -90,5 +87,11 @@ export default function Root() {
     setObjectIds(["1", "2", "3", "4"]);
   }, [setObjectIds, setObjects]);
 
-  return <div></div>;
+  return (
+    <div>
+      {rootIds.map((id) => (
+        <ArcadeObject key={id} id={id} />
+      ))}
+    </div>
+  );
 }
