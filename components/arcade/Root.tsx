@@ -31,56 +31,48 @@ export default function Root() {
       {
         x: 3,
         y: 3,
-        v: [
-          {
-            expr: "99",
-          },
-        ],
+        v: {
+          expr: "99",
+        },
         id: "1",
       },
       {
         x: 6,
         y: 6,
-        v: [
-          {
-            expr: "range[1, 10]",
-            f: "range",
-            i: [1, 10],
-            o: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-          },
-        ],
+        v: {
+          expr: "range[1, 10]",
+          f: "range",
+          i: [1, 10],
+          o: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        },
         id: "2",
       },
       {
         x: 6,
         y: 9,
-        v: [
-          {
-            expr: "map[0, 1]",
-            f: "map",
-            i: {
-              // Inputs are subscription to other nodes
-              0: "n:2",
-              1: "n:4",
-            }, // input is [list node id, expression node id]
-            o: "",
-          },
-        ],
+        v: {
+          expr: "map[0, 1]",
+          f: "map",
+          i: {
+            // Inputs are subscription to other nodes
+            0: "n:2",
+            1: "n:4",
+          }, // input is [list node id, expression node id]
+          o: "",
+        },
         id: "3",
       },
       {
         x: 12,
         y: 12,
-        v: [
-          {
-            expr: "x * 3",
-            f: "*",
-            i: {
-              x: "", // input is not yet linked! just "x"
-            },
-            o: "",
+        v: {
+          expr: "x * 3",
+          f: "*",
+          i: {
+            x: "", // input is not yet linked! just "x"
           },
-        ],
+          o: "",
+        },
         id: "4",
       },
     ]);

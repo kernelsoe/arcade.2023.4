@@ -4,15 +4,15 @@ import { AppStoreSlice } from "./app";
 
 export type Expression = {
   expr: string;
-  o?: any;
-  f?: any;
+  f?: string;
   i?: any;
+  o?: number | number[] | string;
 };
 export type ArcadeObject = {
   id: string;
   x?: number;
   y?: number;
-  v: Expression[];
+  v: Expression;
 }; // Stack |
 
 export interface ObjectStoreSlice {
@@ -25,7 +25,7 @@ export interface ObjectStoreSlice {
   updateObject: (
     id: string,
     k: keyof ArcadeObject,
-    value: string | number | any[],
+    value: Expression,
   ) => void;
   deleteObject: (id: string) => void;
   currentObjectId: string | undefined;
