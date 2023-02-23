@@ -1,10 +1,12 @@
+// @ts-nocheck
 // miniMAL
 // Copyright (C) 2017 Joel Martin
 // Licensed under MPL 2.0
 
-interface Env {}
-export const miniMAL = function (E) {
-  function new_env(ast, env, exprs) {
+type AST = [];
+type Env = Record<string, any>; // Function | expression value?
+export const miniMAL = function (E: Env) {
+  function new_env(ast: AST, env: Env, exprs) {
     // Return new Env with symbols in ast bound to
     // corresponding values in exprs
     env = Object.create(env);
@@ -15,7 +17,7 @@ export const miniMAL = function (E) {
     return env;
   }
 
-  function EVAL(ast, env, seq, f, el) {
+  function EVAL(ast: AST, env: Env, seq, f: Function | object, el: []) {
     while (true) {
       if (seq) {
         // Evaluate the list or object (i.e. eval_ast)
@@ -91,14 +93,22 @@ export const miniMAL = function (E) {
         } else {
           // invoke list form
           f = EVAL(ast[0], env);
+
+          // Macro case
           if (f.M) {
             ast = f(...ast.slice(1));
           } else {
+            // eval Arguments
             el = EVAL(ast.slice(1), env, []);
+
+            // Anonymous lambda
             if (f.A) {
+              // [body, env, fn_arities] el = evaluated payloads
+
               ast = f.A[0];
               env = new_env(f.A[2], f.A[1], el);
             } else {
+              // Just evaluate it!
               return f(...el);
             }
           }
